@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from sklearn.cluster import DBSCAN
-# from rich import print
-# from rich.progress import track
+from rich import print
+from rich.progress import track
 import matplotlib
 from sklearn.metrics import silhouette_samples, silhouette_score
 import scikitplot as skplt
@@ -35,7 +35,7 @@ def plot_silhouette_of_various_clusters(eps_li: list, min_samples: int=MIN_SAMPL
     """
     silhouette_score_list = []
     for i in eps_li:
-        temp_y_predict = DBSCAN(eps=i, min_samples=min_samples).fit_predict(X)
+        temp_y_predict = DBSCAN(eps=i, min_samples=min_samples, n_jobs=-1).fit_predict(X)
         silhouette_score_ = silhouette_score(X, temp_y_predict)
         add_dict = {"eps": i, "silhouette_score": silhouette_score_, "cluster_num": len([value for value in np.unique(temp_y_predict) if value >= 0])}
         print(add_dict)
@@ -49,6 +49,11 @@ def plot_silhouette_of_various_clusters(eps_li: list, min_samples: int=MIN_SAMPL
 
 if __name__ == "__main__":
     origin_df = pd.read_excel("./datasets/副本shujulianxi.xlsx", sheet_name=0)
+    print("Data Load Success!!!")
     X = origin_df[['经度', '纬度']].astype('float16')  # .iloc[:5000]
-    silhouette_score_df = plot_silhouette_of_various_clusters(eps_li=[0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6])
-    silhouette_score_df.to_csv("./assets/silhouette_score_df.csv", index=False, encoding="utf-8-sig")
+    # silhouette_score_df = plot_silhouette_of_various_clusters(eps_li=[0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6])
+    # 数据量太大，只能单个跑
+    silhouette_score_df = plot_silhouette_of_various_clusters(eps_li=[0.15])
+    part_df = pd.read_csv(r"./assets/silhouette_score_df.csv")
+    complete_df = pd.concat([part_df, silhouette_score_df], axis=0, ignore_index=True)
+    complete_df.to_csv("./assets/silhouette_score_df.csv", index=False, encoding="utf-8-sig")
